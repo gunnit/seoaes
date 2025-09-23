@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     OPENAI_DAILY_LIMIT_USD: float = 100.0
 
     # Pricing
-    PLAN_PRICES = {
+    PLAN_PRICES: dict = {
         "free": 0,
         "professional": 397,
         "agency": 1497
