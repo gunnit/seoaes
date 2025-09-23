@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && NODE_ENV=production npm install && NODE_ENV=production npm run build",
+    "build": "cd frontend && npm install --production=false && NODE_ENV=production npm run build",
     "start": "cd frontend && NODE_ENV=production npm start",
-    "install": "cd frontend && npm install",
-    "install:frontend": "cd frontend && npm install",
+    "install": "cd frontend && npm install --production=false",
+    "install:frontend": "cd frontend && npm install --production=false",
     "install:backend": "cd backend && pip install -r requirements.txt",
-    "postinstall": "cd frontend && npm install"
+    "postinstall": "cd frontend && npm install --production=false"
   },
   "engines": {
     "node": ">=18.0.0"
