@@ -13,7 +13,7 @@ playwright==1.40.0
 beautifulsoup4==4.12.2
 openai==1.3.7
 httpx==0.25.2
-paypalserversdk==2.0.0
+paypalrestsdk==1.13.3
 python-dotenv==1.0.0
 pydantic==2.5.2
 pydantic-settings==2.1.0
