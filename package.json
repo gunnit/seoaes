@@ -1,0 +1,17 @@
+{
+  "name": "aivisibility-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && NODE_ENV=production npm install && NODE_ENV=production npm run build",
+    "start": "cd frontend && NODE_ENV=production npm start",
+    "install": "cd frontend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "postinstall": "cd frontend && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
