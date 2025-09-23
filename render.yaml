@@ -1,0 +1,126 @@
+databases:
+  - name: aivisibility-db
+    databaseName: llm_optimization
+    user: aivisibility
+    plan: standard
+    region: oregon
+    ipAllowList: []
+
+services:
+  # Backend API Service
+  - type: web
+    name: aivisibility-backend
+    runtime: python
+    plan: standard
+    region: oregon
+    buildCommand: pip install -r requirements.txt && playwright install chromium && playwright install-deps
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aivisibility-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: aivisibility-redis
+          type: redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://aivisibility.onrender.com
+      - key: BACKEND_URL
+        value: https://aivisibility-backend.onrender.com
+      - key: PYTHON_VERSION
+        value: "3.11"
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Celery Worker Service
+  - type: worker
+    name: aivisibility-worker
+    runtime: python
+    plan: standard
+    region: oregon
+    buildCommand: pip install -r requirements.txt && playwright install chromium && playwright install-deps
+    startCommand: celery -A app.workers.celery_app worker --loglevel=info -Q analysis,instant,technical,content,ai
+    rootDir: backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aivisibility-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: aivisibility-redis
+          type: redis
+          property: connectionString
+      - key: JWT_SECRET
+        fromService:
+          name: aivisibility-backend
+          type: web
+          envVarKey: JWT_SECRET
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11"
+    autoDeploy: true
+
+  # Celery Beat Scheduler
+  - type: worker
+    name: aivisibility-beat
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.workers.celery_app beat --loglevel=info
+    rootDir: backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aivisibility-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: aivisibility-redis
+          type: redis
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.11"
+    autoDeploy: true
+
+  # Frontend Next.js Service
+  - type: web
+    name: aivisibility
+    runtime: node
+    plan: standard
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    rootDir: frontend
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://aivisibility-backend.onrender.com
+    autoDeploy: true
+    healthCheckPath: /
+
+  # Redis Cache Service
+  - type: redis
+    name: aivisibility-redis
+    plan: standard
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
