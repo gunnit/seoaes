@@ -6,12 +6,12 @@ import re
 # Convert sync DATABASE_URL to async and handle SSL
 DATABASE_URL = settings.DATABASE_URL
 
-# Remove any existing driver specification
-if DATABASE_URL.startswith("postgresql+"):
+# Remove any existing driver specification and convert to asyncpg
+if "postgresql" in DATABASE_URL:
+    # Remove any existing driver
     DATABASE_URL = re.sub(r"^postgresql\+[^:]+://", "postgresql://", DATABASE_URL)
-
-# Convert to asyncpg
-if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = re.sub(r"^postgres://", "postgresql://", DATABASE_URL)
+    # Convert to asyncpg
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 # Remove sslmode parameter if present (asyncpg doesn't support it in the URL)
