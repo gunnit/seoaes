@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
-from app.core.database import get_db
+from app.core.database import get_db, engine
 from app.api.auth import get_current_user
 from app.models.models import User, Website, AnalysisRun, AnalysisResult, AnalysisStatus
 from app.schemas.schemas import (
@@ -88,7 +88,7 @@ async def analyze_free(
         url,
         analysis_run.id,
         None,
-        AsyncSession(bind=db.get_bind())
+        AsyncSession(bind=engine, expire_on_commit=False)
     )
 
     # Return initial response
@@ -168,7 +168,7 @@ async def analyze_authenticated(
         url,
         analysis_run.id,
         current_user.id,
-        AsyncSession(bind=db.get_bind())
+        AsyncSession(bind=engine, expire_on_commit=False)
     )
 
     # Return initial response
