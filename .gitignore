@@ -79,3 +79,9 @@ playwright/.cache/
 *.pem
 coverage/
 .nyc_output/
+
+# Local files
+image.png
+instructions.md
+.claude/
+package-lock.json
