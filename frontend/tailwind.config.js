@@ -1,15 +1,36 @@
 /** @type {import('tailwindcss').Config} */
-const path = require('path');
-
 module.exports = {
   content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    // Also check from absolute paths to ensure files are found
-    path.join(__dirname, './pages/**/*.{js,ts,jsx,tsx,mdx}'),
-    path.join(__dirname, './components/**/*.{js,ts,jsx,tsx,mdx}'),
-    path.join(__dirname, './app/**/*.{js,ts,jsx,tsx,mdx}'),
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    // Include the actual component files to ensure they're scanned
+    './app/page.tsx',
+    './app/layout.tsx',
+    './app/providers.tsx',
+    './app/analyze/[id]/page.tsx',
+  ],
+  safelist: [
+    // Add commonly used classes to ensure they're always included
+    'bg-gradient-to-b',
+    'from-gray-50',
+    'to-white',
+    'min-h-screen',
+    'container',
+    'mx-auto',
+    'px-4',
+    'py-4',
+    'flex',
+    'justify-between',
+    'items-center',
+    'text-2xl',
+    'font-bold',
+    'gradient-text',
+    'btn-primary',
+    'btn-secondary',
+    'card',
+    'input-field',
   ],
   theme: {
     extend: {
