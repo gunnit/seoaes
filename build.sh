@@ -28,5 +28,10 @@ else:
     print('Superuser already exists')
 END
 
-# Import products from CSV
-python manage.py import_products --csv "data/Categorie prodotti Maxlube - Database.csv"
+# Import products from CSV (skip if file doesn't exist)
+if [ -f "data/Categorie prodotti Maxlube - Database.csv" ]; then
+    echo "Importing products from CSV..."
+    python manage.py import_products --csv "data/Categorie prodotti Maxlube - Database.csv" || echo "Warning: Could not import products"
+else
+    echo "Product CSV file not found, skipping import..."
+fi
