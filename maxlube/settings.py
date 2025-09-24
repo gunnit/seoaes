@@ -43,7 +43,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -114,17 +113,18 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'it'
 TIME_ZONE = 'Europe/Rome'
-USE_I18N = True
+USE_I18N = False  # Temporarily disable i18n until translations are fixed
 USE_TZ = True
 
-LANGUAGES = [
-    ('it', 'Italiano'),
-    ('en', 'English'),
-]
+# Translation configuration (disabled for now)
+# LANGUAGES = [
+#     ('it', 'Italiano'),
+#     ('en', 'English'),
+# ]
 
-LOCALE_PATHS = [
-    BASE_DIR / 'locale',
-]
+# LOCALE_PATHS = [
+#     BASE_DIR / 'locale',
+# ]
 
 # Language cookie settings
 LANGUAGE_COOKIE_NAME = 'django_language'

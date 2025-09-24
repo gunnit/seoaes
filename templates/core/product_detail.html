@@ -9,7 +9,7 @@
     <!-- Breadcrumb -->
     <nav class="mb-8">
         <ol class="flex items-center space-x-2 text-sm">
-            <li><a href="{% url 'home' %}" class="text-maxlube-blue hover:underline">{% trans "Home" %}</a></li>
+            <li><a href="{% url 'home' %}" class="text-maxlube-blue hover:underline">Home</a></li>
             <li><span class="text-gray-400">/</span></li>
             {% if product.macro_category %}
             <li><a href="{% url 'macro_category' product.macro_category.slug %}" class="text-maxlube-blue hover:underline">{{ product.macro_category.name }}</a></li>
@@ -57,7 +57,7 @@
             <h1 class="text-3xl font-bold font-heading mb-4">{{ product.name }}</h1>
 
             {% if product.sku %}
-            <p class="text-sm text-gray-600 mb-4">{% trans "SKU:" %} {{ product.sku }}</p>
+            <p class="text-sm text-gray-600 mb-4">SKU: {{ product.sku }}</p>
             {% endif %}
 
             <!-- Description -->
@@ -67,14 +67,14 @@
                 {% elif product.description %}
                 <p class="mb-4">{{ product.description|linebreaks }}</p>
                 {% else %}
-                <p class="text-gray-600">{% trans "Product description not available." %}</p>
+                <p class="text-gray-600">Product description not available.</p>
                 {% endif %}
             </div>
 
             <!-- Application -->
             {% if product.application %}
             <div class="mb-6">
-                <h3 class="font-bold mb-2">{% trans "Application" %}</h3>
+                <h3 class="font-bold mb-2">Application</h3>
                 <p class="text-gray-700">{{ product.application }}</p>
             </div>
             {% endif %}
@@ -82,7 +82,7 @@
             <!-- Observation -->
             {% if product.observation %}
             <div class="mb-6">
-                <h3 class="font-bold mb-2">{% trans "Technical Notes" %}</h3>
+                <h3 class="font-bold mb-2">Technical Notes</h3>
                 <p class="text-gray-700">{{ product.observation }}</p>
             </div>
             {% endif %}
@@ -92,26 +92,26 @@
                 {% if product.price %}
                 <p class="text-3xl font-bold text-maxlube-blue mb-4">€{{ product.price }}</p>
                 {% else %}
-                <p class="text-lg text-gray-600 mb-4">{% trans "Price available on request" %}</p>
+                <p class="text-lg text-gray-600 mb-4">Price available on request</p>
                 {% endif %}
 
                 <form method="post" action="{% url 'cart_add' product.id %}" class="flex items-center space-x-4">
                     {% csrf_token %}
                     <div>
-                        <label for="quantity" class="block text-sm font-semibold mb-1">{% trans "Quantity" %}</label>
+                        <label for="quantity" class="block text-sm font-semibold mb-1">Quantity</label>
                         <input type="number" name="quantity" id="quantity" value="1" min="1"
                                class="w-20 px-3 py-2 border border-gray-300 rounded">
                     </div>
                     <div class="flex-1">
                         <button type="submit" class="w-full bg-maxlube-orange text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700">
-                            <i class="fas fa-cart-plus mr-2"></i>{% trans "Add to Cart" %}
+                            <i class="fas fa-cart-plus mr-2"></i>Add to Cart
                         </button>
                     </div>
                 </form>
 
                 <div class="mt-4 text-center">
                     <a href="{% url 'quote_request' %}" class="text-maxlube-blue hover:underline">
-                        {% trans "Request a custom quote" %}
+                        Request a custom quote
                     </a>
                 </div>
             </div>
@@ -120,31 +120,31 @@
             <div class="flex items-center space-x-4 mb-6">
                 {% if product.in_stock %}
                 <span class="flex items-center text-green-600">
-                    <i class="fas fa-check-circle mr-2"></i>{% trans "In Stock" %}
+                    <i class="fas fa-check-circle mr-2"></i>In Stock
                 </span>
                 {% else %}
                 <span class="flex items-center text-red-600">
-                    <i class="fas fa-times-circle mr-2"></i>{% trans "Out of Stock" %}
+                    <i class="fas fa-times-circle mr-2"></i>Out of Stock
                 </span>
                 {% endif %}
                 <span class="text-gray-600">
-                    <i class="fas fa-truck mr-2"></i>{% trans "Delivery in 2-5 business days" %}
+                    <i class="fas fa-truck mr-2"></i>Delivery in 2-5 business days
                 </span>
             </div>
 
             <!-- Documents -->
             {% if product.datasheet or product.safety_sheet %}
             <div class="border-t pt-6">
-                <h3 class="font-bold mb-4">{% trans "Downloads" %}</h3>
+                <h3 class="font-bold mb-4">Downloads</h3>
                 <div class="space-y-2">
                     {% if product.datasheet %}
                     <a href="{{ product.datasheet.url }}" class="flex items-center text-maxlube-blue hover:underline">
-                        <i class="fas fa-file-pdf mr-2"></i>{% trans "Technical Data Sheet" %}
+                        <i class="fas fa-file-pdf mr-2"></i>Technical Data Sheet
                     </a>
                     {% endif %}
                     {% if product.safety_sheet %}
                     <a href="{{ product.safety_sheet.url }}" class="flex items-center text-maxlube-blue hover:underline">
-                        <i class="fas fa-file-pdf mr-2"></i>{% trans "Safety Data Sheet" %}
+                        <i class="fas fa-file-pdf mr-2"></i>Safety Data Sheet
                     </a>
                     {% endif %}
                 </div>
@@ -156,7 +156,7 @@
     <!-- Related Products -->
     {% if related_products %}
     <div class="mt-16">
-        <h2 class="text-2xl font-bold font-heading mb-8">{% trans "Related Products" %}</h2>
+        <h2 class="text-2xl font-bold font-heading mb-8">Related Products</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {% for related in related_products %}
             <div class="bg-white rounded-lg shadow hover:shadow-xl transition-shadow">
@@ -173,7 +173,7 @@
                         {% if related.price %}
                         <p class="text-lg font-bold text-maxlube-blue">€{{ related.price }}</p>
                         {% else %}
-                        <p class="text-sm text-gray-500">{% trans "Price on request" %}</p>
+                        <p class="text-sm text-gray-500">Price on request</p>
                         {% endif %}
                     </div>
                 </a>

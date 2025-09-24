@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% trans "Products" %} - Maxlube{% endblock %}
+{% block title %}Products - Maxlube{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -9,12 +9,12 @@
         <!-- Filters Sidebar -->
         <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-xl font-bold font-heading mb-6">{% trans "Filters" %}</h3>
+                <h3 class="text-xl font-bold font-heading mb-6">Filters</h3>
 
                 <!-- Search -->
                 {% if request.GET.q %}
                 <div class="mb-6">
-                    <p class="text-sm text-gray-600 mb-2">{% trans "Search:" %}</p>
+                    <p class="text-sm text-gray-600 mb-2">Search:</p>
                     <div class="flex items-center justify-between bg-maxlube-light px-3 py-2 rounded">
                         <span class="text-sm font-semibold">{{ request.GET.q }}</span>
                         <a href="{% url 'product_list' %}" class="text-red-500 hover:text-red-700">
@@ -26,7 +26,7 @@
 
                 <!-- Categories -->
                 <div class="mb-6">
-                    <h4 class="font-bold mb-3">{% trans "Categories" %}</h4>
+                    <h4 class="font-bold mb-3">Categories</h4>
                     <div class="space-y-2">
                         {% for macro in macro_categories %}
                         <a href="?macro={{ macro.slug }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
@@ -40,7 +40,7 @@
 
                 <!-- Brands -->
                 <div class="mb-6">
-                    <h4 class="font-bold mb-3">{% trans "Brands" %}</h4>
+                    <h4 class="font-bold mb-3">Brands</h4>
                     <div class="space-y-2">
                         {% for brand in brands %}
                         <a href="?brand={{ brand.slug }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
@@ -55,7 +55,7 @@
                 <!-- Clear Filters -->
                 {% if request.GET.macro or request.GET.category or request.GET.brand or request.GET.q %}
                 <a href="{% url 'product_list' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 block text-center">
-                    {% trans "Clear All Filters" %}
+                    Clear All Filters
                 </a>
                 {% endif %}
             </div>
@@ -74,19 +74,19 @@
                 </p>
                 <select onchange="window.location.href=this.value" class="border border-gray-300 rounded px-3 py-1">
                     <option value="?sort=name{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == 'name' or not request.GET.sort %}selected{% endif %}>
-                        {% trans "Name (A-Z)" %}
+                        Name (A-Z)
                     </option>
                     <option value="?sort=-name{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == '-name' %}selected{% endif %}>
-                        {% trans "Name (Z-A)" %}
+                        Name (Z-A)
                     </option>
                     <option value="?sort=price{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == 'price' %}selected{% endif %}>
-                        {% trans "Price (Low-High)" %}
+                        Price (Low-High)
                     </option>
                     <option value="?sort=-price{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == '-price' %}selected{% endif %}>
-                        {% trans "Price (High-Low)" %}
+                        Price (High-Low)
                     </option>
                     <option value="?sort=newest{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == 'newest' %}selected{% endif %}>
-                        {% trans "Newest First" %}
+                        Newest First
                     </option>
                 </select>
             </div>
@@ -115,7 +115,7 @@
                                 {% if product.price %}
                                 <span class="text-xl font-bold text-maxlube-blue">€{{ product.price }}</span>
                                 {% else %}
-                                <span class="text-sm text-gray-500">{% trans "Quote on request" %}</span>
+                                <span class="text-sm text-gray-500">Quote on request</span>
                                 {% endif %}
                                 <button hx-post="{% url 'cart_add' product.id %}"
                                         hx-swap="outerHTML"
@@ -129,9 +129,9 @@
                 {% empty %}
                 <div class="col-span-full text-center py-12">
                     <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
-                    <p class="text-xl text-gray-600">{% trans "No products found" %}</p>
+                    <p class="text-xl text-gray-600">No products found</p>
                     <a href="{% url 'product_list' %}" class="text-maxlube-blue hover:underline mt-2 inline-block">
-                        {% trans "Clear filters and try again" %}
+                        Clear filters and try again
                     </a>
                 </div>
                 {% endfor %}
@@ -144,7 +144,7 @@
                     {% if page_obj.has_previous %}
                     <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
                        class="px-4 py-2 bg-white rounded border hover:bg-gray-100">
-                        {% trans "Previous" %}
+                        Previous
                     </a>
                     {% endif %}
 
@@ -162,7 +162,7 @@
                     {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
                        class="px-4 py-2 bg-white rounded border hover:bg-gray-100">
-                        {% trans "Next" %}
+                        Next
                     </a>
                     {% endif %}
                 </nav>

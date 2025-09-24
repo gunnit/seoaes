@@ -8,9 +8,14 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate
 
-# Compile translation files
-echo "Compiling translation messages..."
-python manage.py compilemessages || echo "Warning: Could not compile messages, continuing..."
+# Compile translation files (skip if .po files don't exist or are corrupt)
+echo "Checking for translation files..."
+if [ -f "locale/it/LC_MESSAGES/django.po" ] && [ -f "locale/en/LC_MESSAGES/django.po" ]; then
+    echo "Compiling translation messages..."
+    python manage.py compilemessages --ignore=venv || echo "Warning: Could not compile messages, continuing..."
+else
+    echo "Translation files not found, skipping compilation..."
+fi
 
 # Create superuser if it doesn't exist
 python manage.py shell << END

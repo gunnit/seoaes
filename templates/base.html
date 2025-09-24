@@ -1,6 +1,6 @@
-{% load static i18n %}
+{% load static %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -66,14 +66,8 @@
                     <span><i class="fas fa-envelope"></i> {{ company_email }}</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <!-- Language Switcher -->
-                    <form action="{% url 'set_language' %}" method="post" class="flex items-center">
-                        {% csrf_token %}
-                        <select name="language" onchange="this.form.submit()" class="bg-transparent border border-white rounded px-2 py-1">
-                            <option value="it" {% if LANGUAGE_CODE == 'it' %}selected{% endif %}>🇮🇹 Italiano</option>
-                            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>🇬🇧 English</option>
-                        </select>
-                    </form>
+                    <!-- Language Switcher - Temporarily disabled -->
+                    <!-- Will be re-enabled once translations are properly configured -->
                 </div>
             </div>
         </div>
@@ -127,7 +121,7 @@
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="{% url 'product_list' %}" class="font-semibold hover:text-maxlube-blue">
-                            {% trans "All Products" %}
+                            All Products
                         </a>
                         {% for macro in nav_macro_categories %}
                         <div class="relative group">
@@ -147,7 +141,7 @@
                         </div>
                         {% endfor %}
                         <a href="{% url 'contact' %}" class="font-semibold hover:text-maxlube-blue">
-                            {% trans "Contact" %}
+                            Contact
                         </a>
                     </div>
                 </div>
@@ -155,7 +149,7 @@
                 <!-- Mobile Menu -->
                 <div x-show="open" x-transition class="md:hidden pb-4">
                     <a href="{% url 'product_list' %}" class="block py-2 hover:text-maxlube-blue">
-                        {% trans "All Products" %}
+                        All Products
                     </a>
                     {% for macro in nav_macro_categories %}
                     <a href="{% url 'macro_category' macro.slug %}" class="block py-2 hover:text-maxlube-blue">
@@ -163,7 +157,7 @@
                     </a>
                     {% endfor %}
                     <a href="{% url 'contact' %}" class="block py-2 hover:text-maxlube-blue">
-                        {% trans "Contact" %}
+                        Contact
                     </a>
                 </div>
             </div>
@@ -193,7 +187,7 @@
                 <div>
                     <h3 class="text-xl font-bold font-heading mb-4">Maxlube</h3>
                     <p class="text-gray-300 mb-4">
-                        {% trans "Founded in 1985, your trusted supplier of industrial products." %}
+                        Founded in 1985, your trusted supplier of industrial products.
                     </p>
                     <div class="space-y-2 text-sm text-gray-300">
                         <p><i class="fas fa-map-marker-alt mr-2"></i>{{ company_address }}</p>
@@ -204,18 +198,18 @@
 
                 <!-- Quick Links -->
                 <div>
-                    <h3 class="text-lg font-bold font-heading mb-4">{% trans "Quick Links" %}</h3>
+                    <h3 class="text-lg font-bold font-heading mb-4">Quick Links</h3>
                     <ul class="space-y-2 text-gray-300">
-                        <li><a href="{% url 'home' %}" class="hover:text-white">{% trans "Home" %}</a></li>
-                        <li><a href="{% url 'product_list' %}" class="hover:text-white">{% trans "Products" %}</a></li>
-                        <li><a href="{% url 'contact' %}" class="hover:text-white">{% trans "Contact" %}</a></li>
-                        <li><a href="{% url 'quote_request' %}" class="hover:text-white">{% trans "Request Quote" %}</a></li>
+                        <li><a href="{% url 'home' %}" class="hover:text-white">Home</a></li>
+                        <li><a href="{% url 'product_list' %}" class="hover:text-white">Products</a></li>
+                        <li><a href="{% url 'contact' %}" class="hover:text-white">Contact</a></li>
+                        <li><a href="{% url 'quote_request' %}" class="hover:text-white">Request Quote</a></li>
                     </ul>
                 </div>
 
                 <!-- Categories -->
                 <div>
-                    <h3 class="text-lg font-bold font-heading mb-4">{% trans "Categories" %}</h3>
+                    <h3 class="text-lg font-bold font-heading mb-4">Categories</h3>
                     <ul class="space-y-2 text-gray-300">
                         {% for macro in nav_macro_categories %}
                         <li><a href="{% url 'macro_category' macro.slug %}" class="hover:text-white">{{ macro.name }}</a></li>
@@ -225,13 +219,13 @@
 
                 <!-- Newsletter -->
                 <div>
-                    <h3 class="text-lg font-bold font-heading mb-4">{% trans "Newsletter" %}</h3>
-                    <p class="text-gray-300 mb-4">{% trans "Subscribe to our newsletter for updates and offers." %}</p>
+                    <h3 class="text-lg font-bold font-heading mb-4">Newsletter</h3>
+                    <p class="text-gray-300 mb-4">Subscribe to our newsletter for updates and offers.</p>
                     <form class="flex">
-                        <input type="email" placeholder="{% trans 'Your email' %}"
+                        <input type="email" placeholder="La tua email"
                                class="flex-1 px-4 py-2 rounded-l-lg text-black">
                         <button type="submit" class="bg-maxlube-blue hover:bg-blue-700 px-4 py-2 rounded-r-lg">
-                            {% trans "Subscribe" %}
+                            Subscribe
                         </button>
                     </form>
                 </div>
@@ -241,7 +235,7 @@
         <!-- Bottom Bar -->
         <div class="bg-black py-4">
             <div class="container mx-auto px-4 text-center text-sm text-gray-400">
-                <p>&copy; {% now "Y" %} Maxlube S.r.l. - {% trans "All rights reserved" %} | P.IVA: 01234567890</p>
+                <p>&copy; {% now "Y" %} Maxlube S.r.l. - All rights reserved | P.IVA: 01234567890</p>
             </div>
         </div>
     </footer>
