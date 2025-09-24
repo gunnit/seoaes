@@ -1,36 +1,75 @@
 /** @type {import('tailwindcss').Config} */
+const path = require('path');
+const fs = require('fs');
+
+// Determine the correct base path
+let basePath = __dirname;
+
+// Log for debugging on Render
+console.log('[Tailwind] Current directory:', process.cwd());
+console.log('[Tailwind] Config directory:', __dirname);
+
 module.exports = {
   content: [
+    // Relative paths (work when building from frontend dir)
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/**/*.{js,ts,jsx,tsx,mdx}',
-    // Include the actual component files to ensure they're scanned
-    './app/page.tsx',
-    './app/layout.tsx',
-    './app/providers.tsx',
-    './app/analyze/[id]/page.tsx',
+
+    // Absolute paths (work from any directory)
+    path.join(basePath, './app/**/*.{js,ts,jsx,tsx,mdx}'),
+    path.join(basePath, './pages/**/*.{js,ts,jsx,tsx,mdx}'),
+    path.join(basePath, './components/**/*.{js,ts,jsx,tsx,mdx}'),
+    path.join(basePath, './src/**/*.{js,ts,jsx,tsx,mdx}'),
+
+    // Explicit file paths to ensure critical files are included
+    path.join(basePath, './app/page.tsx'),
+    path.join(basePath, './app/layout.tsx'),
+    path.join(basePath, './app/providers.tsx'),
+    path.join(basePath, './app/analyze/[id]/page.tsx'),
+
+    // Alternative paths in case we're building from root
+    './frontend/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './frontend/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './frontend/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './frontend/src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Important: Do not purge CSS in production
   safelist: [
-    // Add commonly used classes to ensure they're always included
-    'bg-gradient-to-b',
-    'from-gray-50',
-    'to-white',
-    'min-h-screen',
+    { pattern: /^(bg|text|border)-/ },
+    { pattern: /^(w|h)-/ },
+    { pattern: /^(m|p)(t|r|b|l|x|y)?-/ },
+    { pattern: /^flex/ },
+    { pattern: /^grid/ },
+    { pattern: /^gap-/ },
+    { pattern: /^space-/ },
+    { pattern: /^rounded/ },
+    { pattern: /^shadow/ },
+    { pattern: /^opacity-/ },
+    { pattern: /^transition/ },
+    { pattern: /^duration-/ },
+    { pattern: /^ease-/ },
+    { pattern: /^font-/ },
+    { pattern: /^text-/ },
+    { pattern: /^leading-/ },
+    { pattern: /^tracking-/ },
+    { pattern: /^min-/ },
+    { pattern: /^max-/ },
+    { pattern: /^hover:/ },
+    { pattern: /^focus:/ },
+    { pattern: /^active:/ },
+    { pattern: /^disabled:/ },
+    { pattern: /^group-hover:/ },
     'container',
     'mx-auto',
-    'px-4',
-    'py-4',
-    'flex',
-    'justify-between',
-    'items-center',
-    'text-2xl',
-    'font-bold',
     'gradient-text',
     'btn-primary',
     'btn-secondary',
     'card',
     'input-field',
+    'animate-pulse-slow',
+    'glass-effect',
   ],
   theme: {
     extend: {
