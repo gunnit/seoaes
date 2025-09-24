@@ -19,8 +19,11 @@ RUN playwright install-deps
 # Copy application code
 COPY . .
 
+# Make startup script executable
+RUN chmod +x startup.sh
+
 # Expose port
 EXPOSE 8000
 
-# Default command
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command - run startup script
+CMD ["./startup.sh"]
