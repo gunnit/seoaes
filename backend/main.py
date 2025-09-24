@@ -146,7 +146,7 @@ async def health_check():
     try:
         # Check database connection
         async with engine.connect() as conn:
-            await conn.execute("SELECT 1")
+            await conn.execute(text("SELECT 1"))
 
         return {
             "status": "healthy",
