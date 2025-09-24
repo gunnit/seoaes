@@ -156,9 +156,17 @@ async def health_check():
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
 
+        # Get worker status
+        try:
+            from background_worker import get_worker_status
+            worker_status = get_worker_status()
+        except:
+            worker_status = {"healthy": False, "running": False}
+
         return {
             "status": "healthy",
             "database": "connected",
+            "worker": worker_status,
             "version": settings.APP_VERSION
         }
     except Exception as e:
@@ -169,6 +177,19 @@ async def health_check():
                 "status": "unhealthy",
                 "error": str(e)
             }
+        )
+
+@app.get("/api/worker/status")
+async def worker_status():
+    """Get detailed worker status"""
+    try:
+        from background_worker import get_worker_status
+        return get_worker_status()
+    except Exception as e:
+        logger.error(f"Failed to get worker status: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to get worker status"}
         )
 
 @app.exception_handler(Exception)

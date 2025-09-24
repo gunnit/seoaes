@@ -12,6 +12,15 @@ import time
 
 logger = logging.getLogger(__name__)
 
+# Global variable to track worker status
+WORKER_STATUS = {
+    'running': False,
+    'last_heartbeat': None,
+    'tasks_processed': 0,
+    'last_task': None,
+    'started_at': None
+}
+
 async def update_analysis_in_db(analysis_id: str, status: str, progress: int, score: int = None):
     """Update analysis status directly in database"""
     from app.core.database import AsyncSessionLocal
@@ -97,6 +106,10 @@ def worker_thread():
     """Worker thread that processes tasks from Redis"""
     import redis
 
+    global WORKER_STATUS
+    WORKER_STATUS['started_at'] = datetime.utcnow()
+    WORKER_STATUS['running'] = True
+
     logger.info("Background worker thread started")
     redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
 
@@ -105,10 +118,14 @@ def worker_thread():
         logger.info(f"Connected to Redis at {redis_url}")
     except Exception as e:
         logger.error(f"Failed to connect to Redis: {e}")
+        WORKER_STATUS['running'] = False
         return
 
-    while True:
+    while WORKER_STATUS['running']:
         try:
+            # Update heartbeat
+            WORKER_STATUS['last_heartbeat'] = datetime.utcnow()
+
             # Check for tasks in Redis queue
             task_data = redis_client.lpop('analysis_queue')
 
@@ -118,9 +135,11 @@ def worker_thread():
                 analysis_id = task.get('analysis_id')
 
                 logger.info(f"Processing task from queue: {url} ({analysis_id})")
+                WORKER_STATUS['last_task'] = {'url': url, 'id': analysis_id, 'time': datetime.utcnow()}
 
                 # Run async processing
                 asyncio.run(process_analysis(url, analysis_id))
+                WORKER_STATUS['tasks_processed'] += 1
             else:
                 # No tasks, wait a bit
                 time.sleep(5)
@@ -134,3 +153,25 @@ def start_background_worker():
     thread = threading.Thread(target=worker_thread, daemon=True)
     thread.start()
     logger.info("Background worker thread launched")
+
+def get_worker_status():
+    """Get the current status of the background worker"""
+    global WORKER_STATUS
+    status = WORKER_STATUS.copy()
+
+    # Convert datetime objects to strings for JSON serialization
+    if status['last_heartbeat']:
+        status['last_heartbeat'] = status['last_heartbeat'].isoformat()
+    if status['started_at']:
+        status['started_at'] = status['started_at'].isoformat()
+    if status['last_task'] and 'time' in status['last_task']:
+        status['last_task']['time'] = status['last_task']['time'].isoformat()
+
+    # Check if worker is healthy (heartbeat within last 30 seconds)
+    if WORKER_STATUS['last_heartbeat']:
+        time_since_heartbeat = (datetime.utcnow() - WORKER_STATUS['last_heartbeat']).total_seconds()
+        status['healthy'] = time_since_heartbeat < 30
+    else:
+        status['healthy'] = False
+
+    return status
