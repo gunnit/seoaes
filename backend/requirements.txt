@@ -20,6 +20,7 @@ pydantic-settings==2.1.0
 asyncpg==0.29.0
 aioredis==2.0.1
 reportlab==4.0.7
+firecrawl-py==0.0.14
 markdown==3.5.1
 lxml==4.9.3
 jsonschema==4.20.0
