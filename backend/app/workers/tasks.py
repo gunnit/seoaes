@@ -1,4 +1,4 @@
-from celery import Task, chain, group
+from celery import Task
 from app.workers.celery_app import celery_app
 from app.services.analyzer import WebsiteAnalyzer
 from app.core.database import AsyncSessionLocal
@@ -20,18 +20,25 @@ class AnalysisTask(Task):
 def analyze_website_task(self, url: str, analysis_run_id: str, user_id: str = None):
     """Main task to orchestrate website analysis"""
     try:
-        # Create task chain for progressive analysis
-        analysis_chain = chain(
-            instant_checks_task.s(url, analysis_run_id),
-            technical_checks_task.s(url, analysis_run_id),
-            content_analysis_task.s(url, analysis_run_id),
-            ai_analysis_task.s(url, analysis_run_id, user_id),
-            finalize_analysis_task.s(analysis_run_id)
-        )
+        logger.info(f"Starting analysis for URL: {url}, Analysis ID: {analysis_run_id}")
 
-        # Execute chain
-        result = analysis_chain.apply_async()
-        return {"status": "started", "task_id": result.id}
+        # Run all analysis stages sequentially
+        result1 = asyncio.run(run_instant_checks_async(url, analysis_run_id))
+        logger.info(f"Instant checks completed: {result1}")
+
+        result2 = asyncio.run(run_technical_checks_async(url, analysis_run_id))
+        logger.info(f"Technical checks completed: {result2}")
+
+        result3 = asyncio.run(run_content_analysis_async(url, analysis_run_id))
+        logger.info(f"Content analysis completed: {result3}")
+
+        result4 = asyncio.run(run_ai_analysis_async(url, analysis_run_id, user_id))
+        logger.info(f"AI analysis completed: {result4}")
+
+        result5 = asyncio.run(finalize_analysis_async(analysis_run_id))
+        logger.info(f"Analysis finalized: {result5}")
+
+        return {"status": "completed", "results": [result1, result2, result3, result4, result5]}
 
     except Exception as e:
         logger.error(f"Analysis task failed: {e}")
@@ -39,55 +46,7 @@ def analyze_website_task(self, url: str, analysis_run_id: str, user_id: str = No
         asyncio.run(mark_analysis_failed(analysis_run_id, str(e)))
         raise
 
-@celery_app.task(name="instant_checks_task")
-def instant_checks_task(previous_result: Any, url: str, analysis_run_id: str):
-    """Stage 1: Instant checks (0-5 seconds)"""
-    try:
-        result = asyncio.run(run_instant_checks_async(url, analysis_run_id))
-        return {"stage": "instant", "results": result}
-    except Exception as e:
-        logger.error(f"Instant checks failed: {e}")
-        raise
-
-@celery_app.task(name="technical_checks_task")
-def technical_checks_task(previous_result: Any, url: str, analysis_run_id: str):
-    """Stage 2: Technical analysis (5-15 seconds)"""
-    try:
-        result = asyncio.run(run_technical_checks_async(url, analysis_run_id))
-        return {"stage": "technical", "results": result}
-    except Exception as e:
-        logger.error(f"Technical checks failed: {e}")
-        raise
-
-@celery_app.task(name="content_analysis_task")
-def content_analysis_task(previous_result: Any, url: str, analysis_run_id: str):
-    """Stage 3: Content analysis (15-30 seconds)"""
-    try:
-        result = asyncio.run(run_content_analysis_async(url, analysis_run_id))
-        return {"stage": "content", "results": result}
-    except Exception as e:
-        logger.error(f"Content analysis failed: {e}")
-        raise
-
-@celery_app.task(name="ai_analysis_task")
-def ai_analysis_task(previous_result: Any, url: str, analysis_run_id: str, user_id: str = None):
-    """Stage 4: AI-powered analysis (30-60 seconds)"""
-    try:
-        result = asyncio.run(run_ai_analysis_async(url, analysis_run_id, user_id))
-        return {"stage": "ai", "results": result}
-    except Exception as e:
-        logger.error(f"AI analysis failed: {e}")
-        raise
-
-@celery_app.task(name="finalize_analysis_task")
-def finalize_analysis_task(previous_result: Any, analysis_run_id: str):
-    """Finalize analysis and calculate overall score"""
-    try:
-        result = asyncio.run(finalize_analysis_async(analysis_run_id))
-        return {"stage": "complete", "result": result}
-    except Exception as e:
-        logger.error(f"Finalization failed: {e}")
-        raise
+# Individual task functions removed - now using single sequential task
 
 # Async helper functions
 async def run_instant_checks_async(url: str, analysis_run_id: str) -> Dict[str, Any]:

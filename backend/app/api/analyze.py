@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +11,7 @@ from app.schemas.schemas import (
     AnalysisProgressUpdate, SSEEvent, AnalysisResultSchema
 )
 from app.services.analyzer import WebsiteAnalyzer
+from app.workers.tasks import analyze_website_task
 from typing import Optional, List, AsyncGenerator
 from uuid import UUID
 from datetime import datetime
@@ -23,26 +24,9 @@ router = APIRouter(prefix="/api/analyze", tags=["Analysis"])
 # In-memory storage for SSE connections (replace with Redis in production)
 active_connections = {}
 
-async def run_analysis_background(
-    url: str,
-    analysis_run_id: UUID,
-    user_id: Optional[UUID],
-    db: AsyncSession
-):
-    """Background task to run website analysis"""
-    async with db:
-        analyzer = WebsiteAnalyzer(db)
-        try:
-            await analyzer.analyze_website(url, analysis_run_id, user_id)
-        except Exception as e:
-            print(f"Analysis failed: {e}")
-        finally:
-            await analyzer.close()
-
 @router.post("/free", response_model=FreeAnalysisResponse)
 async def analyze_free(
     request: AnalysisRequest,
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -82,14 +66,8 @@ async def analyze_free(
     await db.commit()
     await db.refresh(analysis_run)
 
-    # Start analysis in background
-    background_tasks.add_task(
-        run_analysis_background,
-        url,
-        analysis_run.id,
-        None,
-        AsyncSession(bind=engine, expire_on_commit=False)
-    )
+    # Start analysis with Celery
+    task_result = analyze_website_task.delay(url, str(analysis_run.id), None)
 
     # Return initial response
     return FreeAnalysisResponse(
@@ -106,7 +84,6 @@ async def analyze_free(
 @router.post("", response_model=AnalysisRunResponse)
 async def analyze_authenticated(
     request: AnalysisRequest,
-    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -162,14 +139,8 @@ async def analyze_authenticated(
     await db.commit()
     await db.refresh(analysis_run)
 
-    # Start analysis in background
-    background_tasks.add_task(
-        run_analysis_background,
-        url,
-        analysis_run.id,
-        current_user.id,
-        AsyncSession(bind=engine, expire_on_commit=False)
-    )
+    # Start analysis with Celery
+    task_result = analyze_website_task.delay(url, str(analysis_run.id), str(current_user.id))
 
     # Return initial response
     return AnalysisRunResponse(

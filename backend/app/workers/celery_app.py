@@ -29,8 +29,4 @@ celery_app.conf.update(
 # Task routing
 celery_app.conf.task_routes = {
     "app.workers.tasks.analyze_website_task": {"queue": "analysis"},
-    "app.workers.tasks.instant_checks_task": {"queue": "instant"},
-    "app.workers.tasks.technical_checks_task": {"queue": "technical"},
-    "app.workers.tasks.content_analysis_task": {"queue": "content"},
-    "app.workers.tasks.ai_analysis_task": {"queue": "ai"},
 }
