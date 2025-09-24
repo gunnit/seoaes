@@ -9,7 +9,7 @@ services:
     name: maxlube-web
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "chmod +x build.sh && ./build.sh"
     startCommand: "gunicorn maxlube.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
@@ -23,6 +23,6 @@ services:
           name: maxlube-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: .onrender.com
+        value: .onrender.com,maxlube.it,www.maxlube.it
       - key: OPENAI_API_KEY
         sync: false

@@ -8,6 +8,10 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate
 
+# Compile translation files
+echo "Compiling translation messages..."
+python manage.py compilemessages || echo "Warning: Could not compile messages, continuing..."
+
 # Create superuser if it doesn't exist
 python manage.py shell << END
 from django.contrib.auth import get_user_model
