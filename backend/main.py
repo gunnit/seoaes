@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import uvicorn
+from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import engine
 from app.models.models import Base
@@ -19,11 +20,54 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting AIVisibility.pro API...")
 
-    # Create database tables
+    # Initialize database with correct enum types
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        try:
+            # First, check if checkstatus enum exists and has correct values
+            result = await conn.execute(text("""
+                SELECT enumlabel
+                FROM pg_enum
+                WHERE enumtypid = (
+                    SELECT oid FROM pg_type WHERE typname = 'checkstatus'
+                )
+                ORDER BY enumsortorder;
+            """))
 
-    logger.info("Database tables created/verified")
+            current_values = [row[0] for row in result]
+            logger.info(f"Current checkstatus enum values: {current_values}")
+
+            # If 'pass' is not in the enum, we need to fix it
+            if current_values and 'pass' not in current_values:
+                logger.warning("CheckStatus enum missing 'pass' value, attempting to fix...")
+
+                # Drop and recreate the enum with correct values
+                await conn.execute(text("""
+                    -- Create new enum type with correct values
+                    CREATE TYPE checkstatus_new AS ENUM ('pass', 'warn', 'fail');
+
+                    -- Update the column to use the new enum type
+                    ALTER TABLE analysis_results
+                    ALTER COLUMN status TYPE checkstatus_new
+                    USING CASE
+                        WHEN status::text = 'pass_check' THEN 'pass'::checkstatus_new
+                        ELSE status::text::checkstatus_new
+                    END;
+
+                    -- Drop the old enum type
+                    DROP TYPE checkstatus CASCADE;
+
+                    -- Rename the new enum type to the original name
+                    ALTER TYPE checkstatus_new RENAME TO checkstatus;
+                """))
+                logger.info("CheckStatus enum fixed successfully!")
+
+        except Exception as e:
+            # If the enum doesn't exist or there's an error, just log it
+            logger.info(f"Enum check/fix result: {e}")
+
+        # Create all tables (this will also create enums if they don't exist)
+        await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created/verified")
 
     yield
 
