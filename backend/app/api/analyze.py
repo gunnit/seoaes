@@ -66,8 +66,19 @@ async def analyze_free(
     await db.commit()
     await db.refresh(analysis_run)
 
-    # Start analysis with Celery
-    task_result = analyze_website_task.delay(url, str(analysis_run.id), None)
+    # Queue analysis task
+    try:
+        # Try Celery first
+        from app.workers.tasks import analyze_website_task
+        task_result = analyze_website_task.delay(url, str(analysis_run.id), None)
+    except:
+        # Fallback to Redis queue for simple worker
+        import redis
+        import json
+        import os
+        redis_client = redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379'))
+        task = {'url': url, 'analysis_id': str(analysis_run.id)}
+        redis_client.rpush('analysis_queue', json.dumps(task))
 
     # Return initial response
     return FreeAnalysisResponse(
