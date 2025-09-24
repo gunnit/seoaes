@@ -78,7 +78,7 @@ async def analyze_free(
         import os
         redis_client = redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379'))
         task = {'url': url, 'analysis_id': str(analysis_run.id)}
-        redis_client.rpush('analysis_queue', json.dumps(task))
+        redis_client.lpush('analysis_queue', json.dumps(task))
 
     # Return initial response
     return FreeAnalysisResponse(
