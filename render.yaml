@@ -41,7 +41,7 @@ services:
       - key: BACKEND_URL
         value: https://aivisibility-backend.onrender.com
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.0"
     healthCheckPath: /health
     autoDeploy: true
 
@@ -74,7 +74,7 @@ services:
       - key: FIRECRAWL_API_KEY
         sync: false
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.0"
     autoDeploy: true
 
   # Celery Beat Scheduler
@@ -97,7 +97,7 @@ services:
           type: redis
           property: connectionString
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.0"
     autoDeploy: true
 
   # Frontend Next.js Service
