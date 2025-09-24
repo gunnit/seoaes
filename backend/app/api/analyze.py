@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from app.core.database import get_db, engine
 from app.api.auth import get_current_user
-from app.models.models import User, Website, AnalysisRun, AnalysisResult, AnalysisStatus
+from app.models.models import User, Website, AnalysisRun, AnalysisResult, AnalysisStatus, CheckStatus
 from app.schemas.schemas import (
     AnalysisRequest, AnalysisRunResponse, FreeAnalysisResponse,
     AnalysisProgressUpdate, SSEEvent, AnalysisResultSchema
@@ -276,7 +276,7 @@ async def get_analysis_preview(
     result = await db.execute(
         select(AnalysisResult)
         .where(AnalysisResult.analysis_run_id == analysis_id)
-        .where(AnalysisResult.status != "pass")
+        .where(AnalysisResult.status != CheckStatus.pass_check)
         .order_by(AnalysisResult.impact_level.asc())  # Critical first
         .limit(3)
     )
