@@ -1,0 +1,274 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Maxlube - Industrial Products{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Maxlube - Your trusted supplier of industrial lubricants, chemicals, and more since 1985{% endblock %}">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'maxlube-blue': '#004A99',
+                        'maxlube-dark': '#333333',
+                        'maxlube-light': '#F2F2F2',
+                        'maxlube-orange': '#FF6600',
+                    },
+                    fontFamily: {
+                        'heading': ['Montserrat', 'sans-serif'],
+                        'body': ['Lato', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/maxlube.css' %}">
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-white text-maxlube-dark">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 navbar-maxlube italian-accent">
+        <!-- Top Bar -->
+        <div class="bg-maxlube-blue text-white py-2">
+            <div class="container mx-auto px-4 flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-4">
+                    <span><i class="fas fa-phone"></i> {{ company_phone }}</span>
+                    <span><i class="fas fa-envelope"></i> {{ company_email }}</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Language Switcher -->
+                    <form action="{% url 'set_language' %}" method="post" class="flex items-center">
+                        {% csrf_token %}
+                        <select name="language" onchange="this.form.submit()" class="bg-transparent border border-white rounded px-2 py-1">
+                            <option value="it" {% if LANGUAGE_CODE == 'it' %}selected{% endif %}>🇮🇹 Italiano</option>
+                            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>🇬🇧 English</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Navigation -->
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="flex items-center">
+                    <img src="{% static 'img/maxlube_srl_logo-removebg-preview.png' %}" alt="Maxlube Logo" class="h-12 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="text-3xl font-bold font-heading text-maxlube-blue" style="display:none;">MAXLUBE</span>
+                </a>
+
+                <!-- Search Bar -->
+                <form action="{% url 'search' %}" method="get" class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input type="text" name="q" placeholder="{% trans 'Search products...' %}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-maxlube-blue">
+                        <button type="submit" class="absolute right-0 top-0 h-full px-4 bg-maxlube-blue text-white rounded-r-lg hover:bg-blue-700">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Cart & Account -->
+                <div class="flex items-center space-x-6">
+                    <a href="{% url 'cart_detail' %}" class="relative">
+                        <i class="fas fa-shopping-cart text-2xl text-maxlube-blue"></i>
+                        {% if cart|length > 0 %}
+                        <span class="absolute -top-2 -right-2 bg-maxlube-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ cart|length }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <a href="/admin/" class="text-maxlube-blue hover:text-blue-700">
+                        <i class="fas fa-user text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Category Navigation -->
+        <div class="bg-maxlube-light border-t" x-data="{ open: false }">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center space-x-8 py-3">
+                    <!-- Mobile Menu Toggle -->
+                    <button @click="open = !open" class="md:hidden">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="{% url 'product_list' %}" class="font-semibold hover:text-maxlube-blue">
+                            {% trans "All Products" %}
+                        </a>
+                        {% for macro in nav_macro_categories %}
+                        <div class="relative group">
+                            <a href="{% url 'macro_category' macro.slug %}" class="font-semibold hover:text-maxlube-blue">
+                                {{ macro.name }}
+                            </a>
+                            {% if macro.categories.all %}
+                            <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                {% for category in macro.categories.all %}
+                                <a href="{% url 'category' macro.slug category.slug %}"
+                                   class="block px-4 py-2 text-sm hover:bg-maxlube-light">
+                                    {{ category.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <a href="{% url 'contact' %}" class="font-semibold hover:text-maxlube-blue">
+                            {% trans "Contact" %}
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu -->
+                <div x-show="open" x-transition class="md:hidden pb-4">
+                    <a href="{% url 'product_list' %}" class="block py-2 hover:text-maxlube-blue">
+                        {% trans "All Products" %}
+                    </a>
+                    {% for macro in nav_macro_categories %}
+                    <a href="{% url 'macro_category' macro.slug %}" class="block py-2 hover:text-maxlube-blue">
+                        {{ macro.name }}
+                    </a>
+                    {% endfor %}
+                    <a href="{% url 'contact' %}" class="block py-2 hover:text-maxlube-blue">
+                        {% trans "Contact" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
+        {% if messages %}
+        <div class="container mx-auto px-4 py-4">
+            {% for message in messages %}
+            <div class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-maxlube-dark text-white mt-16">
+        <div class="container mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <h3 class="text-xl font-bold font-heading mb-4">Maxlube</h3>
+                    <p class="text-gray-300 mb-4">
+                        {% trans "Founded in 1985, your trusted supplier of industrial products." %}
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-300">
+                        <p><i class="fas fa-map-marker-alt mr-2"></i>{{ company_address }}</p>
+                        <p><i class="fas fa-phone mr-2"></i>{{ company_phone }}</p>
+                        <p><i class="fas fa-envelope mr-2"></i>{{ company_email }}</p>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-bold font-heading mb-4">{% trans "Quick Links" %}</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="{% url 'home' %}" class="hover:text-white">{% trans "Home" %}</a></li>
+                        <li><a href="{% url 'product_list' %}" class="hover:text-white">{% trans "Products" %}</a></li>
+                        <li><a href="{% url 'contact' %}" class="hover:text-white">{% trans "Contact" %}</a></li>
+                        <li><a href="{% url 'quote_request' %}" class="hover:text-white">{% trans "Request Quote" %}</a></li>
+                    </ul>
+                </div>
+
+                <!-- Categories -->
+                <div>
+                    <h3 class="text-lg font-bold font-heading mb-4">{% trans "Categories" %}</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        {% for macro in nav_macro_categories %}
+                        <li><a href="{% url 'macro_category' macro.slug %}" class="hover:text-white">{{ macro.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Newsletter -->
+                <div>
+                    <h3 class="text-lg font-bold font-heading mb-4">{% trans "Newsletter" %}</h3>
+                    <p class="text-gray-300 mb-4">{% trans "Subscribe to our newsletter for updates and offers." %}</p>
+                    <form class="flex">
+                        <input type="email" placeholder="{% trans 'Your email' %}"
+                               class="flex-1 px-4 py-2 rounded-l-lg text-black">
+                        <button type="submit" class="bg-maxlube-blue hover:bg-blue-700 px-4 py-2 rounded-r-lg">
+                            {% trans "Subscribe" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="bg-black py-4">
+            <div class="container mx-auto px-4 text-center text-sm text-gray-400">
+                <p>&copy; {% now "Y" %} Maxlube S.r.l. - {% trans "All rights reserved" %} | P.IVA: 01234567890</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+    <!-- Custom JavaScript -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar-maxlube');
+            if (navbar && window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else if (navbar) {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Parallax effect
+        window.addEventListener('scroll', function() {
+            const parallaxElements = document.querySelectorAll('.parallax-section');
+            const scrolled = window.pageYOffset;
+            parallaxElements.forEach(function(element) {
+                const speed = element.dataset.speed || 0.5;
+                element.style.backgroundPositionY = -(scrolled * speed) + 'px';
+            });
+        });
+    </script>
+
+</body>
+</html>

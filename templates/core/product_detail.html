@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ product.name }} - Maxlube{% endblock %}
+{% block meta_description %}{{ product.meta_description|default:product.description }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-8">
+        <ol class="flex items-center space-x-2 text-sm">
+            <li><a href="{% url 'home' %}" class="text-maxlube-blue hover:underline">{% trans "Home" %}</a></li>
+            <li><span class="text-gray-400">/</span></li>
+            {% if product.macro_category %}
+            <li><a href="{% url 'macro_category' product.macro_category.slug %}" class="text-maxlube-blue hover:underline">{{ product.macro_category.name }}</a></li>
+            <li><span class="text-gray-400">/</span></li>
+            {% endif %}
+            {% if product.category %}
+            <li><a href="{% url 'category' product.macro_category.slug product.category.slug %}" class="text-maxlube-blue hover:underline">{{ product.category.name }}</a></li>
+            <li><span class="text-gray-400">/</span></li>
+            {% endif %}
+            <li><span class="text-gray-600">{{ product.name }}</span></li>
+        </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- Product Images -->
+        <div>
+            <div class="bg-white rounded-lg shadow p-4">
+                {% if product.primary_image %}
+                <img src="{{ product.primary_image.url }}" alt="{{ product.name }}" class="w-full rounded" id="mainImage">
+                {% else %}
+                <div class="w-full h-96 bg-gray-200 rounded flex items-center justify-center">
+                    <i class="fas fa-image text-6xl text-gray-400"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Thumbnail Gallery -->
+            {% if product.all_images|length > 1 %}
+            <div class="mt-4 grid grid-cols-4 gap-2">
+                {% for image in product.all_images %}
+                <img src="{{ image.url }}" alt="{{ product.name }}"
+                     class="w-full h-20 object-cover rounded cursor-pointer hover:opacity-75"
+                     onclick="document.getElementById('mainImage').src='{{ image.url }}'">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div>
+            {% if product.brand %}
+            <p class="text-sm text-gray-500 mb-2">{{ product.brand.name }}</p>
+            {% endif %}
+
+            <h1 class="text-3xl font-bold font-heading mb-4">{{ product.name }}</h1>
+
+            {% if product.sku %}
+            <p class="text-sm text-gray-600 mb-4">{% trans "SKU:" %} {{ product.sku }}</p>
+            {% endif %}
+
+            <!-- Description -->
+            <div class="prose max-w-none mb-6">
+                {% if product.ai_description %}
+                <p class="mb-4">{{ product.ai_description|linebreaks }}</p>
+                {% elif product.description %}
+                <p class="mb-4">{{ product.description|linebreaks }}</p>
+                {% else %}
+                <p class="text-gray-600">{% trans "Product description not available." %}</p>
+                {% endif %}
+            </div>
+
+            <!-- Application -->
+            {% if product.application %}
+            <div class="mb-6">
+                <h3 class="font-bold mb-2">{% trans "Application" %}</h3>
+                <p class="text-gray-700">{{ product.application }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Observation -->
+            {% if product.observation %}
+            <div class="mb-6">
+                <h3 class="font-bold mb-2">{% trans "Technical Notes" %}</h3>
+                <p class="text-gray-700">{{ product.observation }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Price & Cart -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                {% if product.price %}
+                <p class="text-3xl font-bold text-maxlube-blue mb-4">€{{ product.price }}</p>
+                {% else %}
+                <p class="text-lg text-gray-600 mb-4">{% trans "Price available on request" %}</p>
+                {% endif %}
+
+                <form method="post" action="{% url 'cart_add' product.id %}" class="flex items-center space-x-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="quantity" class="block text-sm font-semibold mb-1">{% trans "Quantity" %}</label>
+                        <input type="number" name="quantity" id="quantity" value="1" min="1"
+                               class="w-20 px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                    <div class="flex-1">
+                        <button type="submit" class="w-full bg-maxlube-orange text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700">
+                            <i class="fas fa-cart-plus mr-2"></i>{% trans "Add to Cart" %}
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <a href="{% url 'quote_request' %}" class="text-maxlube-blue hover:underline">
+                        {% trans "Request a custom quote" %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stock Status -->
+            <div class="flex items-center space-x-4 mb-6">
+                {% if product.in_stock %}
+                <span class="flex items-center text-green-600">
+                    <i class="fas fa-check-circle mr-2"></i>{% trans "In Stock" %}
+                </span>
+                {% else %}
+                <span class="flex items-center text-red-600">
+                    <i class="fas fa-times-circle mr-2"></i>{% trans "Out of Stock" %}
+                </span>
+                {% endif %}
+                <span class="text-gray-600">
+                    <i class="fas fa-truck mr-2"></i>{% trans "Delivery in 2-5 business days" %}
+                </span>
+            </div>
+
+            <!-- Documents -->
+            {% if product.datasheet or product.safety_sheet %}
+            <div class="border-t pt-6">
+                <h3 class="font-bold mb-4">{% trans "Downloads" %}</h3>
+                <div class="space-y-2">
+                    {% if product.datasheet %}
+                    <a href="{{ product.datasheet.url }}" class="flex items-center text-maxlube-blue hover:underline">
+                        <i class="fas fa-file-pdf mr-2"></i>{% trans "Technical Data Sheet" %}
+                    </a>
+                    {% endif %}
+                    {% if product.safety_sheet %}
+                    <a href="{{ product.safety_sheet.url }}" class="flex items-center text-maxlube-blue hover:underline">
+                        <i class="fas fa-file-pdf mr-2"></i>{% trans "Safety Data Sheet" %}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-16">
+        <h2 class="text-2xl font-bold font-heading mb-8">{% trans "Related Products" %}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for related in related_products %}
+            <div class="bg-white rounded-lg shadow hover:shadow-xl transition-shadow">
+                <a href="{% url 'product_detail' related.slug %}" class="block">
+                    {% if related.image %}
+                    <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-48 object-cover rounded-t-lg">
+                    {% else %}
+                    <div class="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                    </div>
+                    {% endif %}
+                    <div class="p-4">
+                        <h3 class="font-bold mb-2">{{ related.name }}</h3>
+                        {% if related.price %}
+                        <p class="text-lg font-bold text-maxlube-blue">€{{ related.price }}</p>
+                        {% else %}
+                        <p class="text-sm text-gray-500">{% trans "Price on request" %}</p>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

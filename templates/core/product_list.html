@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Products" %} - Maxlube{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Filters Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-bold font-heading mb-6">{% trans "Filters" %}</h3>
+
+                <!-- Search -->
+                {% if request.GET.q %}
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 mb-2">{% trans "Search:" %}</p>
+                    <div class="flex items-center justify-between bg-maxlube-light px-3 py-2 rounded">
+                        <span class="text-sm font-semibold">{{ request.GET.q }}</span>
+                        <a href="{% url 'product_list' %}" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Categories -->
+                <div class="mb-6">
+                    <h4 class="font-bold mb-3">{% trans "Categories" %}</h4>
+                    <div class="space-y-2">
+                        {% for macro in macro_categories %}
+                        <a href="?macro={{ macro.slug }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           class="block px-3 py-2 rounded hover:bg-maxlube-light {% if request.GET.macro == macro.slug %}bg-maxlube-light font-semibold{% endif %}">
+                            {{ macro.name }}
+                            <span class="text-sm text-gray-500">({{ macro.product_count }})</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Brands -->
+                <div class="mb-6">
+                    <h4 class="font-bold mb-3">{% trans "Brands" %}</h4>
+                    <div class="space-y-2">
+                        {% for brand in brands %}
+                        <a href="?brand={{ brand.slug }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           class="block px-3 py-2 rounded hover:bg-maxlube-light {% if request.GET.brand == brand.slug %}bg-maxlube-light font-semibold{% endif %}">
+                            {{ brand.name }}
+                            <span class="text-sm text-gray-500">({{ brand.product_count }})</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Clear Filters -->
+                {% if request.GET.macro or request.GET.category or request.GET.brand or request.GET.q %}
+                <a href="{% url 'product_list' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 block text-center">
+                    {% trans "Clear All Filters" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="lg:col-span-3">
+            <!-- Sort Bar -->
+            <div class="bg-white rounded-lg shadow p-4 mb-6 flex justify-between items-center">
+                <p class="text-gray-600">
+                    {% blocktrans count counter=page_obj.paginator.count %}
+                    {{ counter }} product found
+                    {% plural %}
+                    {{ counter }} products found
+                    {% endblocktrans %}
+                </p>
+                <select onchange="window.location.href=this.value" class="border border-gray-300 rounded px-3 py-1">
+                    <option value="?sort=name{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == 'name' or not request.GET.sort %}selected{% endif %}>
+                        {% trans "Name (A-Z)" %}
+                    </option>
+                    <option value="?sort=-name{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == '-name' %}selected{% endif %}>
+                        {% trans "Name (Z-A)" %}
+                    </option>
+                    <option value="?sort=price{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == 'price' %}selected{% endif %}>
+                        {% trans "Price (Low-High)" %}
+                    </option>
+                    <option value="?sort=-price{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == '-price' %}selected{% endif %}>
+                        {% trans "Price (High-Low)" %}
+                    </option>
+                    <option value="?sort=newest{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" {% if request.GET.sort == 'newest' %}selected{% endif %}>
+                        {% trans "Newest First" %}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for product in products %}
+                <div class="bg-white rounded-lg shadow hover:shadow-xl transition-shadow">
+                    <a href="{% url 'product_detail' product.slug %}" class="block">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-48 object-cover rounded-t-lg">
+                        {% else %}
+                        <div class="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+                            <i class="fas fa-image text-4xl text-gray-400"></i>
+                        </div>
+                        {% endif %}
+                        <div class="p-4">
+                            {% if product.brand %}
+                            <p class="text-sm text-gray-500 mb-1">{{ product.brand.name }}</p>
+                            {% endif %}
+                            <h3 class="font-bold text-lg mb-2 line-clamp-2">{{ product.name }}</h3>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                                {{ product.description|default:"" }}
+                            </p>
+                            <div class="flex justify-between items-center">
+                                {% if product.price %}
+                                <span class="text-xl font-bold text-maxlube-blue">€{{ product.price }}</span>
+                                {% else %}
+                                <span class="text-sm text-gray-500">{% trans "Quote on request" %}</span>
+                                {% endif %}
+                                <button hx-post="{% url 'cart_add' product.id %}"
+                                        hx-swap="outerHTML"
+                                        class="bg-maxlube-orange text-white px-4 py-2 rounded hover:bg-orange-700">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl text-gray-600">{% trans "No products found" %}</p>
+                    <a href="{% url 'product_list' %}" class="text-maxlube-blue hover:underline mt-2 inline-block">
+                        {% trans "Clear filters and try again" %}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="mt-8 flex justify-center">
+                <nav class="flex space-x-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                       class="px-4 py-2 bg-white rounded border hover:bg-gray-100">
+                        {% trans "Previous" %}
+                    </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="px-4 py-2 bg-maxlube-blue text-white rounded">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                           class="px-4 py-2 bg-white rounded border hover:bg-gray-100">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                       class="px-4 py-2 bg-white rounded border hover:bg-gray-100">
+                        {% trans "Next" %}
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+</style>
+{% endblock %}

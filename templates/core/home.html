@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Maxlube - {% trans "Industrial Products Supplier Since 1985" %}{% endblock %}
+
+{% block content %}
+<!-- Hero Video Section with Maxlube Assets -->
+<div class="hero-video">
+    <video autoplay muted loop playsinline>
+        <source src="{% static 'img/video (2).mp4' %}" type="video/mp4">
+        <!-- Fallback to image if video doesn't load -->
+        <img src="{% static 'img/oillube.jpeg' %}" alt="Maxlube Industrial Products">
+    </video>
+    <div class="hero-video-overlay">
+        <div class="hero-content">
+            <img src="{% static 'img/maxlube_srl_logo-removebg-preview.png' %}" alt="Maxlube" class="h-24 mx-auto mb-6 animate-scale">
+            <h1 class="text-5xl md:text-6xl font-bold font-heading mb-6">
+                {% trans "L'olio che ti accompagna" %}<br>
+                <span class="text-maxlube-orange">{% trans "anche d'estate" %}</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+                {% trans "Industrial Excellence Since 1985 - Your trusted partner for lubricants, chemicals, greases, and industrial supplies." %}
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <a href="{% url 'product_list' %}" class="btn-maxlube btn-maxlube-secondary">
+                    <i class="fas fa-box-open mr-2"></i>
+                    {% trans "Browse 2500+ Products" %}
+                </a>
+                <a href="{% url 'quote_request' %}" class="btn-maxlube btn-maxlube-orange">
+                    <i class="fas fa-file-invoice mr-2"></i>
+                    {% trans "Request Custom Quote" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Homepage Version Selector (for demo purposes) -->
+<div class="bg-yellow-100 border-b border-yellow-300 py-2 text-center" x-data="{ version: 'a' }" style="display:none;">
+    <span class="text-sm font-semibold mr-4">Demo: Choose Homepage Design</span>
+    <button @click="version = 'a'" :class="version === 'a' ? 'bg-maxlube-blue text-white' : 'bg-gray-200'" class="px-4 py-1 rounded mr-2">Version A</button>
+    <button @click="version = 'b'" :class="version === 'b' ? 'bg-maxlube-blue text-white' : 'bg-gray-200'" class="px-4 py-1 rounded">Version B</button>
+
+    <!-- Homepage Version A: Industrial Focus with Category Grid -->
+    <div x-show="version === 'a'" x-transition>
+        <!-- Hero Section A -->
+        <section class="relative bg-gradient-to-r from-maxlube-blue to-blue-800 text-white py-20">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h1 class="text-5xl font-bold font-heading mb-6">
+                            {% trans "Industrial Excellence Since 1985" %}
+                        </h1>
+                        <p class="text-xl mb-8">
+                            {% trans "Your trusted partner for lubricants, chemicals, greases, and industrial supplies." %}
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="{% url 'product_list' %}" class="bg-white text-maxlube-blue px-8 py-3 rounded-lg font-bold hover:bg-gray-100">
+                                {% trans "Browse Products" %}
+                            </a>
+                            <a href="{% url 'quote_request' %}" class="bg-maxlube-orange text-white px-8 py-3 rounded-lg font-bold hover:bg-orange-700">
+                                {% trans "Request Quote" %}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hidden lg:block">
+                        <img src="{% static 'img/oillube.jpeg' %}" alt="Maxlube Oil Barrels" class="rounded-lg shadow-2xl" onerror="this.src='{% static 'img/1752684989383.jpeg' %}'">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Grid A -->
+        <section class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold font-heading text-center mb-12">{% trans "Product Categories" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {% for macro in macro_categories %}
+                    <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                        <a href="{% url 'macro_category' macro.slug %}" class="block p-6">
+                            <div class="category-icon">
+                                <i class="fas fa-oil-can"></i>
+                            </div>
+                            <h3 class="text-xl font-bold font-heading mb-2">{{ macro.name }}</h3>
+                            <p class="text-gray-600 mb-4">{{ macro.description|truncatewords:20 }}</p>
+                            <span class="text-maxlube-blue font-semibold">
+                                {{ macro.product_count }} {% trans "products" %} →
+                            </span>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Brand Values A -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold font-heading text-center mb-12">{% trans "Our Values" %}</h2>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8">
+                    <div class="text-center">
+                        <i class="fas fa-search text-4xl text-maxlube-blue mb-4"></i>
+                        <h3 class="font-bold">{% trans "Curiosity" %}</h3>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-heart text-4xl text-maxlube-blue mb-4"></i>
+                        <h3 class="font-bold">{% trans "Passion" %}</h3>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-handshake text-4xl text-maxlube-blue mb-4"></i>
+                        <h3 class="font-bold">{% trans "Commitment" %}</h3>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-users text-4xl text-maxlube-blue mb-4"></i>
+                        <h3 class="font-bold">{% trans "Presence" %}</h3>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt text-4xl text-maxlube-blue mb-4"></i>
+                        <h3 class="font-bold">{% trans "Loyalty" %}</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Homepage Version B: Hero Banner with Featured Products -->
+    <div x-show="version === 'b'" x-transition>
+        <!-- Hero Banner B -->
+        <section class="relative h-[600px] bg-cover bg-center parallax-section" style="background-image: linear-gradient(rgba(0, 74, 153, 0.7), rgba(0, 74, 153, 0.7)), url('{% static 'img/1752684989383.jpeg' %}');" data-speed="0.5">
+            <div class="container mx-auto px-4 h-full flex items-center">
+                <div class="text-white max-w-2xl">
+                    <h1 class="text-6xl font-bold font-heading mb-6">MAXLUBE</h1>
+                    <p class="text-2xl mb-8">
+                        {% trans "Professional Industrial Solutions for Your Business" %}
+                    </p>
+                    <a href="{% url 'product_list' %}" class="inline-block bg-maxlube-orange text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-orange-700">
+                        {% trans "Discover Our Products" %}
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products Carousel B -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold font-heading text-center mb-12">{% trans "Featured Products" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {% for product in featured_products %}
+                    <div class="bg-white border border-gray-200 rounded-lg hover:shadow-xl transition-shadow">
+                        <a href="{% url 'product_detail' product.slug %}">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-48 object-cover rounded-t-lg">
+                            {% else %}
+                            <div class="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+                                <i class="fas fa-image text-4xl text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg mb-2">{{ product.name }}</h3>
+                                <p class="text-gray-600 text-sm mb-4">{{ product.description|truncatewords:15 }}</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-maxlube-blue font-bold">{% trans "View Details" %}</span>
+                                    <i class="fas fa-arrow-right text-maxlube-blue"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Grid B -->
+        <section class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold font-heading text-center mb-12">{% trans "Why Choose Maxlube" %}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="bg-maxlube-blue text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-certificate text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">{% trans "Quality Certified" %}</h3>
+                        <p class="text-gray-600">{% trans "All our products meet the highest industry standards and certifications." %}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-maxlube-blue text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-truck text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">{% trans "Fast Delivery" %}</h3>
+                        <p class="text-gray-600">{% trans "Reliable and timely delivery across Italy and Europe." %}</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-maxlube-blue text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-headset text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">{% trans "Expert Support" %}</h3>
+                        <p class="text-gray-600">{% trans "Technical assistance and consulting from industry professionals." %}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Italian Heritage Banner -->
+<section class="py-8 bg-white italian-accent">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="flex items-center gap-4">
+                <img src="{% static 'img/brosciures.jpeg' %}" alt="Maxlube Brochures" class="w-32 h-32 object-cover rounded-lg shadow-lg">
+                <div>
+                    <h3 class="text-2xl font-bold font-heading text-maxlube-blue">{% trans "40 Years of Excellence" %}</h3>
+                    <p class="text-gray-600">{% trans "Serving Italian and European industries since 1985" %}</p>
+                </div>
+            </div>
+            <div class="trust-badges flex gap-6">
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <span class="font-semibold">ISO 9001</span>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <span class="font-semibold">{% trans "Certified" %}</span>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <span class="font-semibold">{% trans "Premium" %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Categories with Real Images -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold font-heading text-center mb-12 animate-slide-up">{% trans "Our Product Categories" %}</h2>
+        <div class="category-grid">
+            <div class="category-card animate-scale">
+                <div class="category-icon">
+                    <i class="fas fa-oil-can"></i>
+                </div>
+                <h3 class="text-xl font-bold font-heading mb-2">{% trans "Lubricants & Oils" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "High-performance industrial lubricants" %}</p>
+                <img src="{% static 'img/oillube.jpeg' %}" alt="Oil Barrels" class="w-full h-32 object-cover rounded-lg mb-4">
+                <a href="#" class="text-maxlube-blue font-semibold hover:text-maxlube-orange">
+                    {% trans "View Products" %} →
+                </a>
+            </div>
+            <div class="category-card animate-scale" style="animation-delay: 0.1s;">
+                <div class="category-icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h3 class="text-xl font-bold font-heading mb-2">{% trans "Chemical Products" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Industrial chemicals and solutions" %}</p>
+                <div class="w-full h-32 bg-gradient-to-br from-maxlube-blue to-blue-600 rounded-lg mb-4"></div>
+                <a href="#" class="text-maxlube-blue font-semibold hover:text-maxlube-orange">
+                    {% trans "View Products" %} →
+                </a>
+            </div>
+            <div class="category-card animate-scale" style="animation-delay: 0.2s;">
+                <div class="category-icon">
+                    <i class="fas fa-hard-hat"></i>
+                </div>
+                <h3 class="text-xl font-bold font-heading mb-2">{% trans "Safety Equipment" %}</h3>
+                <p class="text-gray-600 mb-4">{% trans "Protective gear and workwear" %}</p>
+                <div class="w-full h-32 bg-gradient-to-br from-maxlube-orange to-orange-600 rounded-lg mb-4"></div>
+                <a href="#" class="text-maxlube-blue font-semibold hover:text-maxlube-orange">
+                    {% trans "View Products" %} →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Company Story with Golf Image -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="animate-slide-left">
+                <h2 class="text-3xl font-bold font-heading mb-6">{% trans "The Maxlube Story" %}</h2>
+                <p class="text-lg text-gray-600 mb-4">
+                    {% trans "Since 1985, Maxlube has been at the forefront of supplying industrial products to businesses across Italy and Europe. Our commitment to quality, innovation, and customer service has made us a trusted partner for thousands of companies." %}
+                </p>
+                <p class="text-lg text-gray-600 mb-6">
+                    {% trans "From our headquarters in Varese, we maintain strong relationships with leading manufacturers and provide technical expertise to help our clients optimize their operations." %}
+                </p>
+                <div class="grid grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <h4 class="text-3xl font-bold text-maxlube-blue">2,500+</h4>
+                        <p class="text-gray-600">{% trans "Products Available" %}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-3xl font-bold text-maxlube-blue">40</h4>
+                        <p class="text-gray-600">{% trans "Years of Experience" %}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-3xl font-bold text-maxlube-blue">1,000+</h4>
+                        <p class="text-gray-600">{% trans "Happy Clients" %}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-3xl font-bold text-maxlube-blue">24/7</h4>
+                        <p class="text-gray-600">{% trans "Support Available" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-slide-right">
+                <img src="{% static 'img/ownersplayinggolf.jpeg' %}" alt="Maxlube Team" class="w-full rounded-lg shadow-2xl">
+                <p class="text-sm text-gray-500 mt-4 text-center italic">
+                    {% trans "Our leadership team: Building relationships on and off the field" %}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Common Sections for Both Versions -->
+
+<!-- Vintage Marketing Section -->
+<section class="py-16 bg-gray-50 parallax-section" style="background-image: url('{% static 'img/1752684989383.jpeg' %}'); background-attachment: fixed;" data-speed="0.3">
+    <div class="bg-white bg-opacity-95 py-12 rounded-lg">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold font-heading mb-6">{% trans "Maxlube - L'olio che ti accompagna anche d'estate" %}</h2>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                {% trans "Discover our complete range of industrial lubricants and chemicals, designed to keep your operations running smoothly in every season." %}
+            </p>
+            <a href="{% url 'product_list' %}" class="btn-maxlube btn-maxlube-orange">
+                <i class="fas fa-download mr-2"></i>
+                {% trans "Download Catalog" %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Partners/Brands -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold font-heading text-center mb-12">{% trans "Our Partner Brands" %}</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {% for brand in brands %}
+            <div class="flex items-center justify-center p-4">
+                {% if brand.logo %}
+                <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="h-16 object-contain">
+                {% else %}
+                <span class="text-xl font-bold text-gray-600">{{ brand.name }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 bg-maxlube-blue text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold font-heading mb-6">{% trans "Need a Custom Quote?" %}</h2>
+        <p class="text-xl mb-8">{% trans "Contact our sales team for personalized solutions and competitive pricing." %}</p>
+        <div class="flex justify-center space-x-4">
+            <a href="{% url 'quote_request' %}" class="bg-white text-maxlube-blue px-8 py-3 rounded-lg font-bold hover:bg-gray-100">
+                {% trans "Request Quote" %}
+            </a>
+            <a href="{% url 'contact' %}" class="bg-transparent border-2 border-white px-8 py-3 rounded-lg font-bold hover:bg-white hover:text-maxlube-blue">
+                {% trans "Contact Us" %}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

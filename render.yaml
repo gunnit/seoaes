@@ -1,0 +1,28 @@
+databases:
+  - name: maxlube-db
+    plan: free
+    databaseName: maxlube
+    user: maxlube
+
+services:
+  - type: web
+    name: maxlube-web
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn maxlube.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: maxlube-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: OPENAI_API_KEY
+        sync: false
