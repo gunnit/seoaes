@@ -6,7 +6,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 python manage.py collectstatic --no-input
-python manage.py migrate
+
+# Try to run migrations with better error handling
+echo "Running database migrations..."
+python manage.py migrate --no-input || {
+    echo "Warning: Migration failed, but continuing deployment..."
+    echo "The application will start but database may need manual setup."
+}
 
 # Compile translation files (skip if .po files don't exist or are corrupt)
 echo "Checking for translation files..."
@@ -17,15 +23,20 @@ else
     echo "Translation files not found, skipping compilation..."
 fi
 
-# Create superuser if it doesn't exist
-python manage.py shell << END
-from django.contrib.auth import get_user_model
-User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@maxlube.it', 'MaxlubeAdmin2024!')
-    print('Superuser created')
-else:
-    print('Superuser already exists')
+# Create superuser if it doesn't exist (skip if database not available)
+echo "Checking for superuser..."
+python manage.py shell << END || echo "Warning: Could not create superuser, database may not be ready"
+try:
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@maxlube.it', 'MaxlubeAdmin2024!')
+        print('Superuser created')
+    else:
+        print('Superuser already exists')
+except Exception as e:
+    print(f'Could not create superuser: {e}')
+    exit(1)
 END
 
 # Import products from CSV (skip if file doesn't exist)

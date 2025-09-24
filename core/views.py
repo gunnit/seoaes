@@ -7,7 +7,11 @@ from django.utils.translation import gettext as _
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.db import DatabaseError, OperationalError
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     Product, MacroCategory, Category, SubCategory,
@@ -22,23 +26,28 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Handle database errors gracefully
         try:
-            context['featured_products'] = Product.objects.filter(
+            context['featured_products'] = list(Product.objects.filter(
                 featured=True, is_active=True
-            )[:8]
-        except:
+            )[:8])
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch featured products: {e}")
             context['featured_products'] = []
 
         try:
-            context['macro_categories'] = MacroCategory.objects.annotate(
+            context['macro_categories'] = list(MacroCategory.objects.annotate(
                 product_count=Count('products')
-            )
-        except:
+            ))
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch macro categories: {e}")
             context['macro_categories'] = []
 
         try:
-            context['brands'] = Brand.objects.all()[:6]
-        except:
+            context['brands'] = list(Brand.objects.all()[:6])
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch brands: {e}")
             context['brands'] = []
 
         return context
@@ -97,15 +106,30 @@ class ProductListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['macro_categories'] = MacroCategory.objects.annotate(
-            product_count=Count('products')
-        )
-        context['categories'] = Category.objects.annotate(
-            product_count=Count('products')
-        )
-        context['brands'] = Brand.objects.annotate(
-            product_count=Count('products')
-        )
+        try:
+            context['macro_categories'] = MacroCategory.objects.annotate(
+                product_count=Count('products')
+            )
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch macro categories: {e}")
+            context['macro_categories'] = []
+
+        try:
+            context['categories'] = Category.objects.annotate(
+                product_count=Count('products')
+            )
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch categories: {e}")
+            context['categories'] = []
+
+        try:
+            context['brands'] = Brand.objects.annotate(
+                product_count=Count('products')
+            )
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch brands: {e}")
+            context['brands'] = []
+
         context['current_filters'] = self.request.GET
         return context
 
@@ -121,10 +145,14 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Related products from same category
-        context['related_products'] = Product.objects.filter(
-            category=self.object.category,
-            is_active=True
-        ).exclude(id=self.object.id)[:4]
+        try:
+            context['related_products'] = Product.objects.filter(
+                category=self.object.category,
+                is_active=True
+            ).exclude(id=self.object.id)[:4]
+        except (DatabaseError, OperationalError, Exception) as e:
+            logger.warning(f"Could not fetch related products: {e}")
+            context['related_products'] = []
         return context
 
 
