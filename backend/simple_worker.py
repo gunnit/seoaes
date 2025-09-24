@@ -9,9 +9,21 @@ import asyncio
 import logging
 from uuid import UUID
 from datetime import datetime
-import redis
-import asyncpg
 from typing import Dict, Any
+
+try:
+    import redis
+except ImportError:
+    print("Installing redis...")
+    os.system("pip install redis")
+    import redis
+
+try:
+    import asyncpg
+except ImportError:
+    print("Installing asyncpg...")
+    os.system("pip install asyncpg")
+    import asyncpg
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

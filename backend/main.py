@@ -20,6 +20,14 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting AIVisibility.pro API...")
 
+    # Start background worker thread
+    try:
+        from background_worker import start_background_worker
+        start_background_worker()
+        logger.info("Background worker started successfully")
+    except Exception as e:
+        logger.warning(f"Could not start background worker: {e}")
+
     # Initialize database with correct enum types
     try:
         # Use separate transaction for enum fix
