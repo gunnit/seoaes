@@ -78,13 +78,28 @@ WSGI_APPLICATION = 'maxlube.wsgi.application'
 # Use SQLite for local development if DATABASE_URL is not set
 import dj_database_url
 
+# Try multiple sources for DATABASE_URL
 DATABASE_URL = env('DATABASE_URL', default=None)
 
+# Fallback to the hardcoded internal URL if DATABASE_URL is not set
+if not DATABASE_URL:
+    DATABASE_URL = 'postgresql://maxlube_database_user:U0HXnC2z1gySRsf5uYuIMTtT9Ixr45vJ@dpg-d39rmm56ubrc73eceqmg-a/maxlube_database'
+
 if DATABASE_URL:
-    # Use PostgreSQL on Render (production)
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-    }
+    try:
+        # Use PostgreSQL on Render (production)
+        DATABASES = {
+            'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        }
+    except Exception as e:
+        print(f"Warning: Could not parse DATABASE_URL: {e}")
+        # Fallback to SQLite if database URL parsing fails
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     # Use SQLite for local development
     DATABASES = {

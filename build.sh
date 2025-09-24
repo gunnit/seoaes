@@ -7,6 +7,10 @@ pip install -r requirements.txt
 
 python manage.py collectstatic --no-input
 
+# Test database connection first
+echo "Testing database connection..."
+python manage.py test_db || echo "Warning: Database connection test failed"
+
 # Try to run migrations with better error handling
 echo "Running database migrations..."
 python manage.py migrate --no-input || {
