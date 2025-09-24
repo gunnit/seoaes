@@ -21,53 +21,81 @@ async def lifespan(app: FastAPI):
     logger.info("Starting AIVisibility.pro API...")
 
     # Initialize database with correct enum types
-    async with engine.begin() as conn:
-        try:
-            # First, check if checkstatus enum exists and has correct values
-            result = await conn.execute(text("""
-                SELECT enumlabel
-                FROM pg_enum
-                WHERE enumtypid = (
-                    SELECT oid FROM pg_type WHERE typname = 'checkstatus'
-                )
-                ORDER BY enumsortorder;
-            """))
-
-            current_values = [row[0] for row in result]
-            logger.info(f"Current checkstatus enum values: {current_values}")
-
-            # If 'pass' is not in the enum, we need to fix it
-            if current_values and 'pass' not in current_values:
-                logger.warning("CheckStatus enum missing 'pass' value, attempting to fix...")
-
-                # Drop and recreate the enum with correct values
-                await conn.execute(text("""
-                    -- Create new enum type with correct values
-                    CREATE TYPE checkstatus_new AS ENUM ('pass', 'warn', 'fail');
-
-                    -- Update the column to use the new enum type
-                    ALTER TABLE analysis_results
-                    ALTER COLUMN status TYPE checkstatus_new
-                    USING CASE
-                        WHEN status::text = 'pass_check' THEN 'pass'::checkstatus_new
-                        ELSE status::text::checkstatus_new
-                    END;
-
-                    -- Drop the old enum type
-                    DROP TYPE checkstatus CASCADE;
-
-                    -- Rename the new enum type to the original name
-                    ALTER TYPE checkstatus_new RENAME TO checkstatus;
+    try:
+        # Use separate transaction for enum fix
+        async with engine.connect() as conn:
+            try:
+                # Check if checkstatus enum exists and has correct values
+                result = await conn.execute(text("""
+                    SELECT enumlabel
+                    FROM pg_enum
+                    WHERE enumtypid = (
+                        SELECT oid FROM pg_type WHERE typname = 'checkstatus'
+                    )
+                    ORDER BY enumsortorder;
                 """))
-                logger.info("CheckStatus enum fixed successfully!")
 
-        except Exception as e:
-            # If the enum doesn't exist or there's an error, just log it
-            logger.info(f"Enum check/fix result: {e}")
+                current_values = [row[0] for row in result]
+                logger.info(f"Current checkstatus enum values: {current_values}")
 
-        # Create all tables (this will also create enums if they don't exist)
-        await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables created/verified")
+                # If 'pass' is not in the enum, add it
+                if current_values and 'pass' not in current_values:
+                    logger.warning("CheckStatus enum missing 'pass' value, adding it...")
+
+                    # PostgreSQL 9.1+ supports ALTER TYPE ... ADD VALUE
+                    await conn.execute(text("""
+                        ALTER TYPE checkstatus ADD VALUE IF NOT EXISTS 'pass';
+                    """))
+                    await conn.commit()
+                    logger.info("Added 'pass' value to CheckStatus enum!")
+
+            except Exception as enum_error:
+                logger.info(f"Enum check result: {enum_error}")
+                # If adding value fails, try recreating the enum
+                try:
+                    async with engine.begin() as tx_conn:
+                        logger.info("Attempting to recreate enum with correct values...")
+
+                        # Check if table exists
+                        table_check = await tx_conn.execute(text("""
+                            SELECT EXISTS (
+                                SELECT FROM information_schema.tables
+                                WHERE table_name = 'analysis_results'
+                            );
+                        """))
+                        table_exists = table_check.scalar()
+
+                        if table_exists:
+                            # Drop the column temporarily
+                            await tx_conn.execute(text("""
+                                ALTER TABLE analysis_results DROP COLUMN IF EXISTS status;
+                            """))
+
+                        # Drop and recreate the enum
+                        await tx_conn.execute(text("""
+                            DROP TYPE IF EXISTS checkstatus CASCADE;
+                            CREATE TYPE checkstatus AS ENUM ('pass', 'warn', 'fail');
+                        """))
+
+                        if table_exists:
+                            # Re-add the column
+                            await tx_conn.execute(text("""
+                                ALTER TABLE analysis_results
+                                ADD COLUMN status checkstatus NOT NULL DEFAULT 'warn';
+                            """))
+
+                        logger.info("Enum recreated successfully!")
+                except Exception as recreate_error:
+                    logger.error(f"Failed to recreate enum: {recreate_error}")
+
+        # Now create/verify tables in a new transaction
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            logger.info("Database tables created/verified")
+
+    except Exception as e:
+        logger.error(f"Database initialization error: {e}")
+        # Continue anyway - the app might still work
 
     yield
 
